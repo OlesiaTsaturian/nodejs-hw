@@ -1,65 +1,36 @@
 import express from 'express';
 import cors from 'cors';
-import pino from 'pino-http';
 import 'dotenv/config';
+import { connectMongoDB } from './db/connectMongoDB.js';
+
+import { errorHandler } from './middleware/errorHandler.js';
+import { notFoundHandler } from './middleware/notFoundHandler.js';
+import { logger } from './middleware/logger.js';
+import notesRouter from './routes/notesRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 
+app.use(logger);
 app.use(express.json());
 app.use(cors());
-app.use(
-  pino({
-    level: 'info',
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'HH:MM:ss',
-        ignore: 'pid,hostname',
-        messageFormat:
-          '{req.method} {req.url} {res.statusCode} - {responseTime}ms',
-        hideObject: true,
-      },
-    },
-  }),
-);
-app.get('/notes', (request, response) => {
-  response.status(200).json({
-    message: 'Retrieved all notes',
+
+app.use(notesRouter);
+
+app.use(notFoundHandler);
+
+app.use(errorHandler);
+
+await connectMongoDB();
+
+// app.listen(PORT, () => {
+//   console.log(`Server is running on port ${PORT}`);
+// });
+
+app
+  .listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  })
+  .on('error', (err) => {
+    console.error('Server error:', err);
   });
-});
-
-app.get('/notes/:noteId', (request, response) => {
-  const { noteId } = request.params;
-
-  response.status(200).json({
-    message: `Retrieved note with ID: ${noteId}`,
-  });
-});
-
-app.get('/test-error', (request, response) => {
-  throw new Error('Simulated server error');
-});
-
-app.use((request, response) => {
-  response.status(404).json({
-    message: 'Route not found',
-  });
-});
-
-app.use((err, request, response, next) => {
-  console.error('Error:', err.message);
-
-  const isProd = process.env.NODE_ENV === 'production';
-
-  response.status(500).json({
-    message: isProd
-      ? 'Something went wrong. Please try again later.'
-      : err.message,
-  });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is runnin on port ${PORT}`);
-});
