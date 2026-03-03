@@ -1,17 +1,29 @@
 import { Router } from 'express';
-import { Note } from '../models/note.js';
 import {
   getNoteById,
-  getNotes,
-  testError,
+  getAllNotes,
+  createNote,
+  deleteNote,
+  updateNote,
 } from '../controllers/notesController.js';
 
 const router = Router();
 
-router.get('/notes', getNotes);
+router.get('/notes', getAllNotes);
 
 router.get('/notes/:noteId', getNoteById);
 
-router.get('/test-error', testError);
+router.post('/notes', createNote);
+
+router.delete('/notes/:noteId', deleteNote);
+
+router.patch('/notes/:noteId', updateNote);
+
+//!Error checks routers
+// router.get('/test-http-error', (req, res) => {
+//   throw createHttpError(404, 'Note not found');
+// });
+
+// router.get('/test-error', testError);
 
 export default router;
