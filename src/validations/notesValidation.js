@@ -12,12 +12,11 @@ export const createNoteSchema = {
     }),
 
     content: Joi.string()
+      .allow('')
       .trim()
-      .default('')
       .messages({ 'string.base': 'Content should be a string' }),
     tag: Joi.string()
       .valid(...TAGS)
-      .default('Todo')
       .messages({ 'any.only': `Tag must be one of ${TAGS}` }),
   }),
 };
