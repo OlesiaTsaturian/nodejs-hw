@@ -62,7 +62,7 @@ export const updateNote = async (request, response) => {
   const { noteId } = request.params;
 
   const note = await Note.findOneAndUpdate({ _id: noteId }, request.body, {
-    new: true,
+    returnDocument: 'after',
   });
 
   if (!note) {
