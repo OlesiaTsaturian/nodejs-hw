@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
+import cookieParser from 'cookie-parser';
 import { connectMongoDB } from './db/connectMongoDB.js';
 import { errors } from 'celebrate';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -15,6 +16,7 @@ const PORT = process.env.PORT ?? 3000;
 app.use(logger);
 app.use(express.json());
 app.use(cors());
+app.use(cookieParser());
 
 app.use(authRoutes);
 app.use(notesRoutes);

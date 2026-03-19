@@ -6,7 +6,7 @@ export const getAllNotes = async (request, response) => {
 
   const skip = (page - 1) * perPage;
 
-  const notesQuery = Note.find();
+  const notesQuery = Note.find({ userId: request.user._id });
 
   if (search) {
     notesQuery.where({ $text: { $search: search } });
@@ -21,6 +21,7 @@ export const getAllNotes = async (request, response) => {
     notesQuery.skip(skip).limit(perPage),
   ]);
   const totalPages = Math.ceil(totalNotes / perPage);
+
   response.status(200).json({
     page,
     perPage,
@@ -32,7 +33,10 @@ export const getAllNotes = async (request, response) => {
 
 export const getNoteById = async (request, response) => {
   const { noteId } = request.params;
-  const note = await Note.findById(noteId);
+  const note = await Note.findOne({
+    _id: noteId,
+    userId: request.user._id,
+  });
 
   if (!note) {
     throw createHttpError(404, 'Note not found');
@@ -42,14 +46,17 @@ export const getNoteById = async (request, response) => {
 };
 
 export const createNote = async (request, response) => {
-  const note = await Note.create(request.body);
+  const note = await Note.create({ ...request.body, userId: request.user._id });
   response.status(201).json(note);
 };
 
 export const deleteNote = async (request, response) => {
   const { noteId } = request.params;
 
-  const note = await Note.findOneAndDelete({ _id: noteId });
+  const note = await Note.findOneAndDelete({
+    _id: noteId,
+    userId: request.user._id,
+  });
 
   if (!note) {
     throw createHttpError(404, 'Note not found');
@@ -61,9 +68,13 @@ export const deleteNote = async (request, response) => {
 export const updateNote = async (request, response) => {
   const { noteId } = request.params;
 
-  const note = await Note.findOneAndUpdate({ _id: noteId }, request.body, {
-    returnDocument: 'after',
-  });
+  const note = await Note.findOneAndUpdate(
+    { _id: noteId, userId: request.user._id },
+    request.body,
+    {
+      returnDocument: 'after',
+    },
+  );
 
   if (!note) {
     throw createHttpError(404, 'Note not found');
